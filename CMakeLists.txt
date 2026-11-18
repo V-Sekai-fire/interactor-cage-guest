@@ -30,5 +30,5 @@ add_stage_elf(cage
 	${R}/vendor/solve/core/lbfgsb/guest/drape/vec_cpu.cpp)
 target_compile_options(cage PRIVATE -ffp-contract=off -Wno-unused-function)
 target_include_directories(cage PRIVATE ${R}/guest ${R}/guest/cage ${R}/guest/common ${R}/vendor/solve/core/lbfgsb/guest/drape ${R}/vendor/solve/core/lbfgsb/kernels/drape/cpp ${R}/vendor/solve/core/slang_rt ${R}/guest/common/deform
-	${R}/vendor/guest-runtime/guest/avbd/slang-rt ${R}/vendor/guest-common/guest)
+	${R}/vendor/anny-kernels/kernels/anny/cpp ${R}/vendor/guest-runtime/guest/avbd/slang-rt ${R}/vendor/guest-common/guest)
 target_link_libraries(cage PRIVATE pmp_subset)
