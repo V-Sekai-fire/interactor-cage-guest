@@ -26,9 +26,9 @@ add_stage_elf(cage
 	${R}/guest/common/deform/bhc13/bhc13.cpp
 	${R}/guest/common/deform/cage_kernels.cpp
 	${R}/guest/common/deform/skin_bake.cpp
-	${R}/vendor/drape-guest/guest/drape/lbfgsb.cpp
-	${R}/vendor/drape-guest/guest/drape/vec_cpu.cpp)
+	${R}/vendor/solve/core/lbfgsb/guest/drape/lbfgsb.cpp
+	${R}/vendor/solve/core/lbfgsb/guest/drape/vec_cpu.cpp)
 target_compile_options(cage PRIVATE -ffp-contract=off -Wno-unused-function)
-target_include_directories(cage PRIVATE ${R}/guest ${R}/guest/cage ${R}/guest/common ${R}/vendor/drape-guest/guest/drape ${R}/guest/common/deform
+target_include_directories(cage PRIVATE ${R}/guest ${R}/guest/cage ${R}/guest/common ${R}/vendor/solve/core/lbfgsb/guest/drape ${R}/vendor/solve/core/lbfgsb/kernels/drape/cpp ${R}/vendor/solve/core/slang_rt ${R}/guest/common/deform
 	${R}/vendor/guest-runtime/guest/avbd/slang-rt ${R}/vendor/guest-common/guest)
 target_link_libraries(cage PRIVATE pmp_subset)
