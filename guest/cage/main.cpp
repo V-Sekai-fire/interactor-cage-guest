@@ -55,6 +55,9 @@ static Variant cage_bind(PackedArray<float> mesh, int require_contained) {
 	return text(cageapi::bind(mesh.fetch(), require_contained != 0));
 }
 
+static Variant cage_bind_method(PackedArray<float> mesh, int require_contained, String method) {
+	return text(cageapi::bind(mesh.fetch(), require_contained != 0, std::string(method.utf8())));
+}
 static Variant cage_body_frames(PackedArray<float> xyz, PackedArray<int32_t> triangles, int frames,
 		PackedArray<float> frame_w) {
 	return text(cageapi::body_frames(xyz.fetch(), triangles.fetch(), frames, frame_w.fetch()));
@@ -165,6 +168,8 @@ int main() {
 	ADD_API_FUNCTION(cage_net_indices, "PackedInt32Array", "", "The cage's polygon corners");
 	ADD_API_FUNCTION(cage_bind, "String", "PackedFloat32Array mesh, int require_contained",
 			"Queue bhc13's bind of the mesh (cage_tick advances it)");
+	ADD_API_FUNCTION(cage_bind_method, "String", "PackedFloat32Array mesh, int require_contained, String method",
+			"Queue a bind of the mesh with the named method: \"bhc13\" (constraint solve) or \"green\" (closed form, cheap)");
 	ADD_API_FUNCTION(cage_body_frames, "String",
 			"PackedFloat32Array xyz, PackedInt32Array triangles, int frames, PackedFloat32Array frame_w",
 			"The body skinned to each sampled frame");

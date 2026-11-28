@@ -37,6 +37,8 @@ std::string net_from_patches(const std::vector<float> &vertices, const std::vect
 std::vector<float> net_vertices();
 std::vector<int32_t> net_indices();
 std::string bind(const std::vector<float> &mesh_xyz, bool require_contained);
+// method: "bhc13" (the (1,3) biharmonic bind, constraint solve) or "green" (Green coordinates, closed form, no solve).
+std::string bind(const std::vector<float> &mesh_xyz, bool require_contained, const std::string &method);
 std::string body_frames(const std::vector<float> &xyz, const std::vector<int32_t> &tris, int frames,
 		const std::vector<float> &frame_w);
 // params: "margin 0.002 w_L 0.001 w_r 0.0001" plus LbfgsbParams keys ("m 6 epsilon 1e-7 ...").
