@@ -295,11 +295,11 @@ bool BindJob::begin(const Net &net, const std::vector<double> &mesh_xyz, const s
 	if (opt_.gram_chunk == 0) {
 		opt_.gram_chunk = 1;
 	}
-	if (method != "bhc13") {
+	if (method != "bhc13" && method != "green") {
 		if (method == "harmonic" || method == "idw" || method == "lbs") {
-			err = "bind: method \"" + method + "\" is RFD 2279's and not built here (only \"bhc13\")";
+			err = "bind: method \"" + method + "\" is RFD 2279's and not built here (\"bhc13\" and \"green\")";
 		} else {
-			err = "bind: unknown method \"" + method + "\" (only \"bhc13\")";
+			err = "bind: unknown method \"" + method + "\" (\"bhc13\" or \"green\")";
 		}
 		stage_ = S_FAILED;
 		err_ = err;
@@ -331,13 +331,19 @@ bool BindJob::begin(const Net &net, const std::vector<double> &mesh_xyz, const s
 	const uint32_t nB = uint32_t(bary_.size() / 3);
 	S_ = b_.nT * nB;
 	const uint32_t K = b_.K();
+	// "green": Green coordinates, the harmonic vertex and face parts of the rows, in closed form. No constraint samples,
+	// Gram matrix, LU or solve: the stages that make the (1,3) bind cost grow steeply with the cage.
+	const bool green = method == "green";
+	if (green) {
+		S_ = 0;
+	}
 	spts_.assign(3 * size_t(S_), 0.0);
 	sgamma_.assign(3 * size_t(S_), 0.0);
 	sown_.assign(S_, 0u);
 	srows_.assign(size_t(S_) * 2 * K, 0.0);
-	G_.assign(size_t(K) * K, 0.0);
-	X_.assign(size_t(K) * K, 0.0);
-	piv_.assign(K, 0u);
+	G_.assign(green ? 0 : size_t(K) * K, 0.0);
+	X_.assign(green ? 0 : size_t(K) * K, 0.0);
+	piv_.assign(green ? 0 : K, 0u);
 	b_.W.assign(size_t(b_.P) * K, 0.0f);
 	b_.Wd.assign(size_t(b_.P) * K, 0.0);
 	b_.winding.assign(b_.P, 0.0f);
@@ -345,7 +351,7 @@ bool BindJob::begin(const Net &net, const std::vector<double> &mesh_xyz, const s
 	zeros_.assign(3 * size_t(opt_.chunk), 0.0);
 	rows_.assign(size_t(opt_.chunk) * 2 * K, 0.0);
 	cursor_ = 0;
-	stage_ = S_SAMPLES;
+	stage_ = green ? S_MESH : S_SAMPLES;
 	return true;
 }
 
@@ -408,8 +414,19 @@ bool BindJob::step() {
 			if (n > 0) {
 				cagek::bhc_coords(n, b_.nV, b_.nT, mesh_.data() + 3 * size_t(cursor_), cage_.data(), b_.tris.data(),
 						none_.data(), zeros_.data(), rows_.data());
-				cagek::bind_blend(n, K, rows_.data(), X_.data(), b_.Wd.data() + size_t(cursor_) * K,
-						b_.W.data() + size_t(cursor_) * K);
+				if (b_.method == "green") {
+					// Green coordinates: the weights are the harmonic part of the row, [h | bh] -> h.
+					for (uint32_t i = 0; i < n; ++i) {
+						for (uint32_t j = 0; j < K; ++j) {
+							const double h = rows_[size_t(i) * 2 * K + j];
+							b_.Wd[size_t(cursor_ + i) * K + j] = h;
+							b_.W[size_t(cursor_ + i) * K + j] = float(h);
+						}
+					}
+				} else {
+					cagek::bind_blend(n, K, rows_.data(), X_.data(), b_.Wd.data() + size_t(cursor_) * K,
+							b_.W.data() + size_t(cursor_) * K);
+				}
 				// Generalized winding: the harmonic vertex coordinates sum to 1
 				// inside a closed cage and to 0 outside.
 				for (uint32_t i = 0; i < n; ++i) {
