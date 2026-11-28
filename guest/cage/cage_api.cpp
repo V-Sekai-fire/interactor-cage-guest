@@ -249,6 +249,10 @@ std::vector<int32_t> net_indices() {
 }
 
 std::string bind(const std::vector<float> &mesh_xyz, bool require_contained) {
+	return bind(mesh_xyz, require_contained, "bhc13");
+}
+
+std::string bind(const std::vector<float> &mesh_xyz, bool require_contained, const std::string &method) {
 	State &s = st();
 	if (!s.have_net) {
 		return "FAIL: no cage net (net_from_mesh, or net_from_patches ticked to state=net_done, first)";
@@ -257,12 +261,12 @@ std::string bind(const std::vector<float> &mesh_xyz, bool require_contained) {
 	opt.require_contained = require_contained;
 	std::string err;
 	s.have_fit = false;
-	if (!s.bindjob.begin(s.net, mesh_xyz, "bhc13", opt, err)) {
+	if (!s.bindjob.begin(s.net, mesh_xyz, method, opt, err)) {
 		return failed(err);
 	}
 	s.job = J_BINDING;
 	s.steps = 0;
-	return fmt("ok queued bind P=%zu K=%u samples=%u", mesh_xyz.size() / 3, s.bindjob.result().K(),
+	return fmt("ok queued bind (%s) P=%zu K=%u samples=%u", method.c_str(), mesh_xyz.size() / 3, s.bindjob.result().K(),
 			s.bindjob.samples());
 }
 
